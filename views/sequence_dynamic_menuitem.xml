@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <menuitem action="ir_sequence_template_form"
+                  id="menu_ir_sequence_template_form"
+                  name="Sequence templates"
+                  parent="base.next_id_5"/>
+
+</odoo>

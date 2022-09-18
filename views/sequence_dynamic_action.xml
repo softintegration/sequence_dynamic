@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="ir_sequence_template_form" model="ir.actions.act_window">
+            <field name="name">Template sequences</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">ir.sequence</field>
+            <field name="view_id" ref="sequence_dynamic.sequence_template_view_tree"/>
+            <field name="context">
+                {
+                    'default_sequence_type':'sequence_template'
+                }
+            </field>
+            <field name="domain">[('sequence_type','=','sequence_template')]</field>
+        </record>
+
+        <record id="base.ir_sequence_form" model="ir.actions.act_window">
+            <field name="domain">[('sequence_type','=','sequence')]</field>
+        </record>
+
+
+</odoo>

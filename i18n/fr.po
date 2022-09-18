@@ -1,0 +1,167 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sequence_dynamic
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-18 14:04+0000\n"
+"PO-Revision-Date: 2022-09-18 14:04+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sequence_dynamic
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid ""
+"<span colspan=\"2\">Field in related model : %(code)</span>\n"
+"                                    <span colspan=\"2\">Nested field in related model : %(product_categ_id.code)</span>\n"
+"                                    <span colspan=\"2\">Static prefix can be added by prefixing them by **: %(code,**/)</span>"
+msgstr ""
+"<span colspan=\"2\">Champ dans le modèle : %(code)</span>\n"
+"                                    <span colspan=\"2\">Champ imbriqué dans le modèle : %(product_categ_id.code)</span>\n"
+"                                    <span colspan=\"2\">Une valeur statique peut être ajouté en les préfixant par **: %(code,**/)</span>"
+
+#. module: sequence_dynamic
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid ""
+"<span colspan=\"2\">The type of the field must be char</span>\n"
+"                                    <span colspan=\"2\">Combination of fields must be comma-separated and the order will be taken in account:%(code,product_categ_id.code) </span>"
+msgstr ""
+"<span colspan=\"2\">Le type du champ doit être char</span>\n"
+"                                    <span colspan=\"2\">La combinaison des champs doit être séparée par des virgules et l'ordre sera pris en compte:%(code,product_categ_id.code) </span>"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__child_ids
+msgid "Child"
+msgstr "Fils"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__child_count
+msgid "Child Count"
+msgstr ""
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__dynamic_prefix_code
+msgid "Dynamic prefix codification"
+msgstr "Préfixe dynamique"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid ""
+"Invalid syntax for the dynamic prefix,please check the rules in Legend for "
+"dynamic prefix"
+msgstr "Syntaxe invalide pour le préfixe dynamique, veuillez vérifier les contraintes dans Légende pour le préfixe dynamique"
+
+#. module: sequence_dynamic
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid "Legend for dynamic prefix"
+msgstr "Légende pour le préfixe dynamique"
+
+#. module: sequence_dynamic
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_template_view_tree
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid "Next Number"
+msgstr "Valeur suivante"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid "No dynamic prefix fields has been found!"
+msgstr "Aucun champ de préfixe dynamique n'a été trouvé !"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid "No field %s detected in model %s"
+msgstr "Aucun champ %s n'a été détecté dans le modèle %s"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid "No value found for %s,can't generate dynamic prefix!"
+msgstr "Aucune valeur trouvée pour %s, impossible de générer la valeur du préfixe!"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid ""
+"One or more fields in dynamic prefix doesn't match the specified fields in "
+"sequence template!"
+msgstr "Un ou plusieurs champs dans le préfixe dynamique ne correspondent pas aux champs spécifiés dans le modèle de séquence!"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__parent_id
+msgid "Parent sequence"
+msgstr "Séquence parent"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__dynamic_prefix_code
+msgid ""
+"Please take in account all this constraints specified under <Legend for "
+"dynamic prefix>"
+msgstr "Veuillez prendre en compte toutes ces contraintes spécifiées sous <Légende pour le préfixe dynamique>"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__related_model
+msgid "Related model"
+msgstr "Modèle"
+
+#. module: sequence_dynamic
+#: model:ir.model,name:sequence_dynamic.model_ir_sequence
+#: model:ir.model.fields.selection,name:sequence_dynamic.selection__ir_sequence__sequence_type__sequence
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid "Sequence"
+msgstr "Séquence"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__sequence_type
+msgid "Sequence Type"
+msgstr "Type de séquence"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields.selection,name:sequence_dynamic.selection__ir_sequence__sequence_type__sequence_template
+msgid "Sequence template"
+msgstr "Modèle de séquence"
+
+#. module: sequence_dynamic
+#: model:ir.ui.menu,name:sequence_dynamic.menu_ir_sequence_template_form
+msgid "Sequence templates"
+msgstr "Modèles de séquence"
+
+#. module: sequence_dynamic
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_template_view_tree
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid "Sequences"
+msgstr "Séquences"
+
+#. module: sequence_dynamic
+#: model:ir.actions.act_window,name:sequence_dynamic.ir_sequence_template_form
+msgid "Template sequences"
+msgstr "Modèles de séquence
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__parent_id
+msgid "The sequence model that create this sequence"
+msgstr "Modèle de séquence qui a généré cette séquence"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__related_model
+msgid "This will help to control the dynamic prefix field before its usage"
+msgstr "Cela aidera à contrôler le champ de préfixe dynamique avant l'utilisation"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid ""
+"field used in dynamic prefix must be char or many2one,the type of field %s "
+"is %s"
+msgstr "le champ utilisé dans le préfixe dynamique doit être char ou many2one, le type de champ %s est %s"

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="sequence_view_inherited" model="ir.ui.view">
+            <field name="name">sequence.view.inherited</field>
+            <field name="model">ir.sequence</field>
+            <field name="inherit_id" ref="base.sequence_view"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//sheet/group[1]" position="before">
+                        <div class="oe_button_box" name="button_box">
+                            <button type="object" name="action_view_child_sequences"
+                                    class="oe_stat_button"
+                                    icon="fa-list"
+                                    attrs="{'invisible': [('child_count', '=', 0)]}">
+                                <field name="child_count" widget="statinfo" string="Sequences"/>
+                            </button>
+                        </div>
+                    </xpath>
+                    <xpath expr="//field[@name='code']" position="after">
+                        <field name="sequence_type"/>
+                    </xpath>
+                    <xpath expr="//notebook" position="inside">
+                        <page string="Sequence" name="sequence_template" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
+                            <group>
+                                <group attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
+                                   <field name="related_model" options="{'no_open': True, 'no_create': True}"/>
+                                   <field name="dynamic_prefix_code" attrs="{'required':[('sequence_type','=','sequence_template')]}"/>
+                                   <field name="use_date_range"/>
+                                </group>
+                                <group>
+                                    <field name="padding"/>
+                                </group>
+                            </group>
+                            <field name="date_range_ids" attrs="{'invisible': [('use_date_range', '=', False)]}">
+                            <tree string="Sequences" editable="top">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="number_next_actual" string="Next Number"/>
+                            </tree>
+                        </field>
+                            <group col="2" string="Legend for dynamic prefix">
+                                <group>
+                                    <span colspan="2">Field in related model : %(code)</span>
+                                    <span colspan="2">Nested field in related model : %(product_categ_id.code)</span>
+                                    <span colspan="2">Static prefix can be added by prefixing them by **: %(code,**/)</span>
+                                </group>
+                                <group>
+                                    <span colspan="2">The type of the field must be char</span>
+                                    <span colspan="2">Combination of fields must be comma-separated and the order will be taken in account:%(code,product_categ_id.code) </span>
+                                </group>
+                            </group>
+                        </page>
+                    </xpath>
+                    <xpath expr="//notebook/page[1]" position="attributes">
+                        <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
+                    </xpath>
+                </data>
+            </field>
+        </record>
+
+        <record id="sequence_template_view_tree" model="ir.ui.view">
+            <field name="model">ir.sequence</field>
+            <field name="arch" type="xml">
+                <tree string="Sequences">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="related_model"/>
+                    <field name="dynamic_prefix_code"/>
+                    <field name="padding"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="number_next_actual" string="Next Number"/>
+                    <field name="number_increment"/>
+                    <field name="implementation"/>
+                </tree>
+            </field>
+        </record>
+
+</odoo>
