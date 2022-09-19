@@ -4,6 +4,11 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError, UserError
 
+DYNAMIC_PREFIX_DELIMITER = '%'
+DYNAMIC_PREFIX_START_VAR = '('
+DYNAMIC_PREFIX_END_VAR = ')'
+DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER = '**'
+
 
 class IrSequence(models.Model):
     _inherit = 'ir.sequence'
@@ -46,15 +51,16 @@ class IrSequence(models.Model):
         action['context'] = dict(self._context, default_parent_id=self.id)
         return action
 
-    @api.constrains('sequence_type', 'related_model','dynamic_prefix_code')
+    @api.constrains('sequence_type', 'related_model', 'dynamic_prefix_code')
     def _check_dynamic_prefix_code(self):
         if self.sequence_type == 'sequence_template' and self.related_model:
             self._check_dynamic_prefix_code_syntax(self.dynamic_prefix_code, self.related_model.model)
 
     @api.model
     def _check_dynamic_prefix_code_syntax(self, dynamic_prefix_code, model_name):
-        valid_syntax = dynamic_prefix_code.count('%') == 1 and dynamic_prefix_code.count('(') == 1 \
-                       and dynamic_prefix_code.count(')') == 1
+        valid_syntax = dynamic_prefix_code.count(DYNAMIC_PREFIX_DELIMITER) == 1 and dynamic_prefix_code.count(
+            DYNAMIC_PREFIX_START_VAR) == 1 \
+                       and dynamic_prefix_code.count(DYNAMIC_PREFIX_END_VAR) == 1
         assert valid_syntax, _(
             'Invalid syntax for the dynamic prefix,please check the rules in Legend for dynamic prefix')
         fields = self._parse_fields_for_check(dynamic_prefix_code)
@@ -64,12 +70,12 @@ class IrSequence(models.Model):
 
     @api.model
     def _parse_fields_for_check(self, dynamic_prefix_code):
-        fields_list = self._parse_fields(dynamic_prefix_code,remove_static_fields=True)
+        fields_list = self._parse_fields(dynamic_prefix_code, remove_static_fields=True)
         # for the check purpose we need only the first field not the nested one
         return [field.split(".")[0] for field in fields_list]
 
     @api.model
-    def _parse_fields(self, dynamic_prefix_code,remove_static_fields=False):
+    def _parse_fields(self, dynamic_prefix_code, remove_static_fields=False):
         field_list = self._parse_dynamic_prefix_variable(dynamic_prefix_code)
         if not remove_static_fields:
             return field_list
@@ -77,17 +83,18 @@ class IrSequence(models.Model):
         return field_list
 
     @api.model
-    def _parse_static_fields(self,dynamic_prefix_code):
+    def _parse_static_fields(self, dynamic_prefix_code):
         field_list = self._parse_dynamic_prefix_variable(dynamic_prefix_code)
-        return [field for field in field_list if field.startswith('**')]
+        return [field for field in field_list if field.startswith(DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER)]
 
     @api.model
-    def _parse_static_field(self,field):
-        return field.replace('**','')
+    def _parse_static_field(self, field):
+        return field.replace(DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER, '')
 
     @api.model
-    def _parse_dynamic_prefix_variable(self,dynamic_prefix_code):
-        fields_str = dynamic_prefix_code.replace('%', '').replace('(', '').replace(')', '')
+    def _parse_dynamic_prefix_variable(self, dynamic_prefix_code):
+        fields_str = dynamic_prefix_code.replace(DYNAMIC_PREFIX_DELIMITER, '').replace(DYNAMIC_PREFIX_START_VAR, '') \
+            .replace(DYNAMIC_PREFIX_END_VAR, '')
         return fields_str.split(',')
 
     @api.model
@@ -135,7 +142,7 @@ class IrSequence(models.Model):
             for date_range in self.date_range_ids:
                 new_date_range = date_range.copy({
                     'sequence_id': new_sequence.id,
-                    'number_next_actual':date_range.number_next_actual
+                    'number_next_actual': date_range.number_next_actual
                 })
         return new_sequence
 
@@ -144,7 +151,7 @@ class IrSequence(models.Model):
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
         record = self.env[self.related_model.model]
-        if len(self._parse_fields(self.dynamic_prefix_code,remove_static_fields=True)) != len(dynamic_prefix_fields):
+        if len(self._parse_fields(self.dynamic_prefix_code, remove_static_fields=True)) != len(dynamic_prefix_fields):
             raise UserError(
                 _("One or more fields in dynamic prefix doesn't match the specified fields in sequence template!"))
         fields = self._parse_fields(self.dynamic_prefix_code)
@@ -162,22 +169,21 @@ class IrSequence(models.Model):
                 if field_obj.type not in ('char', 'many2one'):
                     raise UserError(
                         _('field used in dynamic prefix must be char or many2one,the type of field %s is %s') % (
-                        field_obj.string, field_obj.type))
+                            field_obj.string, field_obj.type))
                 if field_obj.type == 'char':
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
                         raise UserError(_("No value found for %s,can't generate dynamic prefix!") % (field_obj.name))
                     prefix += val
                 elif field_obj.type == 'many2one':
-                    prefix += self._parse_many2one_field(record, field_obj, dynamic_prefix_fields, field)
+                    prefix += self._parse_many2one_field(record, dynamic_prefix_fields, field)
         return prefix
 
     def _remove_static_fields(self):
         pass
 
-
     @api.model
-    def _parse_many2one_field(self, record, field_obj, dynamic_prefix_fields, field):
+    def _parse_many2one_field(self, record, dynamic_prefix_fields, field):
         prefix = ''
         nested_list_fields = field.split(".")
         next_field = nested_list_fields.pop(0)
