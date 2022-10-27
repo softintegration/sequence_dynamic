@@ -151,9 +151,6 @@ class IrSequence(models.Model):
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
         record = self.env[self.related_model.model]
-        if len(self._parse_fields(self.dynamic_prefix_code, remove_static_fields=True)) != len(dynamic_prefix_fields):
-            raise UserError(
-                _("One or more fields in dynamic prefix doesn't match the specified fields in sequence template!"))
         fields = self._parse_fields(self.dynamic_prefix_code)
         prefix = ''
         for field in fields:
