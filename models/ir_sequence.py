@@ -26,6 +26,12 @@ class IrSequence(models.Model):
     child_ids = fields.Many2many('ir.sequence', compute='_compute_child_ids')
     child_count = fields.Integer(compute='_compute_child_count')
 
+    # FIXME: this method must be removed from here
+    @api.model
+    def _translate_dynamic_values(self, src):
+        domain = [('src', '=', src), ('lang','=', self.env.context.get('lang'))]
+        return self.env['ir.translation'].search(domain, limit=1).value or src
+
     @api.depends('child_ids')
     def _compute_child_count(self):
         self.child_count = len(self.child_ids)
@@ -67,8 +73,11 @@ class IrSequence(models.Model):
             'Invalid syntax for the dynamic prefix,please check the rules in Legend for dynamic prefix')
         fields = self._parse_fields_for_check(dynamic_prefix_code)
         for field in fields:
-            if getattr(self.env[model_name], field, False):
-                raise ValidationError(_('No field %s detected in model %s') % (field, self.env[model_name]._name))
+            try:
+                getattr(self.env[model_name], field)
+            except AttributeError as e:
+                raise ValidationError(_('No field %s detected in model %s') % (
+                field, self._translate_dynamic_values(self.env[model_name]._description)))
 
     @api.model
     def _parse_fields_for_check(self, dynamic_prefix_code):
