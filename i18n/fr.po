@@ -112,8 +112,8 @@ msgstr "Veuillez prendre en compte toutes ces contraintes spécifiées sous <Lé
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__related_model
-msgid "Related model"
-msgstr "Modèle"
+msgid "Model using this sequence"
+msgstr "Modèle utilisant cette sequence"
 
 #. module: sequence_dynamic
 #: model:ir.model,name:sequence_dynamic.model_ir_sequence
@@ -155,8 +155,12 @@ msgstr "Modèle de séquence qui a généré cette séquence"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__related_model
-msgid "This will help to control the dynamic prefix field before its usage"
-msgstr "Cela aidera à contrôler le champ de préfixe dynamique avant l'utilisation"
+msgid "This will help to control the dynamic prefix field before its usage "
+"(as no hard relation existing between object and sequence,with this data the system will be able to compare "
+"the fields put in the dynamic part with the controls existing on this Model)"
+msgstr "Cela aidera à contrôler le champ de préfixe dynamique avant l'utilisation "
+"(car aucune relation directe n'existe entre un modèle et une séquence,avec cette donnée le systéme pourra comparer "
+"les champs mis dans la partie dynamique avec les champs existant sur ce Modèle)"
 
 #. module: sequence_dynamic
 #: code:addons/sequence_dynamic/models/ir_sequence.py:0

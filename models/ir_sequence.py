@@ -15,8 +15,10 @@ class IrSequence(models.Model):
 
     sequence_type = fields.Selection([('sequence', 'Sequence'),
                                       ('sequence_template', 'Sequence template')], required=True, default='sequence')
-    related_model = fields.Many2one('ir.model', string='Related model',
-                                    help='This will help to control the dynamic prefix field before its usage')
+    related_model = fields.Many2one('ir.model', string='Model using this sequence',
+                                    help="This will help to control the dynamic prefix field before its usage "
+                                         "(as no hard relation existing between object and sequence,with this data the system will be able to compare "
+                                         "the fields put in the dynamic part with the controls existing on this Model)")
     dynamic_prefix_code = fields.Text(string='Dynamic prefix codification',
                                       help='Please take in account all this constraints specified under <Legend for dynamic prefix>')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',

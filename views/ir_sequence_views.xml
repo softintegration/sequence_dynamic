@@ -20,11 +20,14 @@
                     <xpath expr="//field[@name='code']" position="after">
                         <field name="sequence_type"/>
                     </xpath>
+                    <xpath expr="//field[@name='implementation']" position="after">
+                        <field name="related_model" options="{'no_open': True, 'no_create': True}"
+                               attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    </xpath>
                     <xpath expr="//notebook" position="inside">
                         <page string="Sequence" name="sequence_template" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
                             <group>
                                 <group attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
-                                   <field name="related_model" options="{'no_open': True, 'no_create': True}"/>
                                    <field name="dynamic_prefix_code" attrs="{'required':[('sequence_type','=','sequence_template')]}"/>
                                    <field name="use_date_range"/>
                                 </group>
