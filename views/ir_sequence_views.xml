@@ -24,7 +24,27 @@
                         <field name="related_model" options="{'no_open': True, 'no_create': True}"
                                attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
                     </xpath>
-                    <xpath expr="//notebook" position="inside">
+                    <xpath expr="//field[@name='suffix']" position="before">
+                        <field name="dynamic_prefix_code"
+                               attrs="{'required':[('sequence_type','=','sequence_template')],'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    </xpath>
+                    <xpath expr="//field[@name='prefix']" position="attributes">
+                        <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
+                    </xpath>
+                    <xpath expr="//page[@name='sequence']" position="inside">
+                        <group name="dynamic_sequence_legend"
+                               attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"
+                               string="Legend for dynamic prefix">
+                            <span colspan="2">Field in related model : %(field_name)</span>
+                            <span colspan="2">Nested field in related model : %(field_name.field_name)</span>
+                            <span colspan="2">Static prefix can be added by prefixing them by **: %(field_name,**/)</span>
+                        </group>
+                        <group name="dynamic_sequence_rules" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
+                            <span colspan="2">The type of the field in dynamic prefix must be char</span>
+                            <span colspan="2">Combination of fields in dynamic prefix must be comma-separated and the order will be taken in account:%(field_name,field_name.field_name) </span>
+                        </group>
+                    </xpath>
+                    <!--<xpath expr="//notebook" position="inside">
                         <page string="Sequence" name="sequence_template" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
                             <group>
                                 <group attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
@@ -50,14 +70,14 @@
                                 </group>
                                 <group>
                                     <span colspan="2">The type of the field must be char</span>
-                                    <span colspan="2">Combination of fields must be comma-separated and the order will be taken in account:%(code,product_categ_id.code) </span>
+                                    <span colspan="2">Combination of fields must be comma-separated and the order will be taken in account:%(field_name,field_name.field_name) </span>
                                 </group>
                             </group>
                         </page>
                     </xpath>
                     <xpath expr="//notebook/page[1]" position="attributes">
                         <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
-                    </xpath>
+                    </xpath>-->
                 </data>
             </field>
         </record>
