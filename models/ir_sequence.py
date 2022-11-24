@@ -29,7 +29,7 @@ class IrSequence(models.Model):
     # FIXME: this method must be removed from here
     @api.model
     def _translate_dynamic_values(self, src):
-        domain = [('src', '=', src), ('lang','=', self.env.context.get('lang'))]
+        domain = [('src', '=', src), ('lang', '=', self.env.context.get('lang'))]
         return self.env['ir.translation'].search(domain, limit=1).value or src
 
     @api.depends('child_ids')
@@ -77,7 +77,7 @@ class IrSequence(models.Model):
                 getattr(self.env[model_name], field)
             except AttributeError as e:
                 raise ValidationError(_('No field %s detected in model %s') % (
-                field, self._translate_dynamic_values(self.env[model_name]._description)))
+                    field, self._translate_dynamic_values(self.env[model_name]._description)))
 
     @api.model
     def _parse_fields_for_check(self, dynamic_prefix_code):
@@ -159,9 +159,18 @@ class IrSequence(models.Model):
 
     def _build_prefix(self):
         dynamic_prefix_fields = self.env.context.get('dynamic_prefix_fields', False)
+        # the model using he sequence,here we hve to get theis model in the logic order,we get the model imposed in the context
+        # and if it is not specified we get the model specified in the sequence template to control the dynamic fields because
+        # this settings is considered as explicit specification of the model,and if this is not specified as well,we suppose that th model
+        # is the code of the sequence ,this is the last assumption that can be done
+        related_model = self.env.context.get('related_model', self.related_model and self.related_model.model)
+        if not related_model:
+            related_model = self.code
+        if not related_model:
+            raise UserError(_("No related model detected,can not build dynamic sequence!"))
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
-        record = self.env[self.related_model.model]
+        record = self.env[related_model]
         fields = self._parse_fields(self.dynamic_prefix_code)
         prefix = ''
         for field in fields:
