@@ -204,8 +204,7 @@ class IrSequence(models.Model):
         prefix = ''
         nested_list_fields = field.split(".")
         next_field = nested_list_fields.pop(0)
-        record_obj = self.env[record._fields[next_field].comodel_name]
-        record = record_obj.browse(dynamic_prefix_fields[next_field])
+        record = self._get_record_from_field_value(record,dynamic_prefix_fields,next_field)
         if not record:
             raise UserError(_("No value found for %s,can't generate dynamic prefix!") % (next_field))
         while nested_list_fields:
@@ -218,3 +217,9 @@ class IrSequence(models.Model):
             else:
                 record = val
         return prefix
+    def _get_record_from_field_value(self,record,dynamic_prefix_fields,field):
+        if isinstance(dynamic_prefix_fields[field],int):
+            record_obj = self.env[record._fields[field].comodel_name]
+            return record_obj.browse(dynamic_prefix_fields[field])
+        else:
+            return dynamic_prefix_fields[field]
