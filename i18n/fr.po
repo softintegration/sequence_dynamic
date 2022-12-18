@@ -170,3 +170,9 @@ msgid ""
 msgstr ""
 "le champ utilisé dans le préfixe dynamique doit être char ou many2one, le "
 "type de champ %s est %s"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:171
+#, python-format
+msgid "No related model detected,can not build dynamic sequence!"
+msgstr "Modèle utilisant cette sequence n'a pas pu étre detecté,impossible de créer la séquence dynamique"

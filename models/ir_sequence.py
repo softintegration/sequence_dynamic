@@ -165,9 +165,10 @@ class IrSequence(models.Model):
         # is the code of the sequence ,this is the last assumption that can be done
         related_model = self.env.context.get('related_model', self.related_model and self.related_model.model)
         if not related_model:
-            related_model = self.code
-        if not related_model:
-            raise UserError(_("No related model detected,can not build dynamic sequence!"))
+            try:
+                related_model = self.env[self.code]._name
+            except KeyError:
+                raise UserError(_("No related model detected,can not build dynamic sequence!"))
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
         record = self.env[related_model]
