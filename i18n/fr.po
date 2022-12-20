@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 15.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-14 11:41+0000\n"
-"PO-Revision-Date: 2022-11-14 11:41+0000\n"
+"POT-Creation-Date: 2022-12-20 12:51+0000\n"
+"PO-Revision-Date: 2022-12-20 12:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -30,10 +30,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
 msgid ""
 "<span colspan=\"2\">The type of the field in dynamic prefix must be char</span>\n"
-"                            <span colspan=\"2\">Combination of fields in dynamic prefix must be comma-separated and the order will be taken in account:%(field_name,field_name.field_name) </span>"
+"                            <span colspan=\"2\">In Sequence generator code,all the types are authorized but One2many and Many2many</span>\n"
+"                            <span colspan=\"2\">Combination of fields in dynamic prefix/Sequence generator code must be comma-separated and the order will be taken in account:%(field_name,field_name.field_name) </span>"
 msgstr ""
 "<span colspan=\"2\">Le type des champs à utiliser dans le préfixe dynamique doit être Char</span>\n"
-"                            <span colspan=\"2\">La combinaison de champs dans le préfixe dynamique doit être séparée par des virgules et l'ordre sera pris en compte : %(nom_champ,nom_champ.nom_champ) </span>"
+"                            <span colspan=\"2\">Dans le code générateur de séquence, tous les types sont autorisés sauf Many2Many et One2many</span>\n"
+"                            <span colspan=\"2\">La combinaison de champs dans le préfixe dynamique/Code générateur de séquence doit être séparée par des virgules et l'ordre sera pris en compte : %(nom_champ,nom_champ.nom_champ) </span>"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__child_ids
@@ -51,19 +53,35 @@ msgid "Dynamic prefix codification"
 msgstr "Préfixe dynamique"
 
 #. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__generator_code
+msgid "Generator code"
+msgstr "Code Unique de séquence"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:78
+#, python-format
+msgid ""
+"In sequence template,at least Dynamic prefix or Sequence generator code must"
+" be used!"
+msgstr ""
+"Dans le modèle de séquence,le préfixe dynamique ou le code générateur de séquence doit"
+" être utilisé!"
+
+#. module: sequence_dynamic
 #: code:addons/sequence_dynamic/models/ir_sequence.py:0
 #, python-format
 msgid ""
-"Invalid syntax for the dynamic prefix,please check the rules in Legend for "
-"dynamic prefix"
+"Invalid syntax for the dynamic prefix/Sequence generator code,please check "
+"the rules in Legend for dynamic prefix/Sequence generator code"
 msgstr ""
-"Syntaxe invalide pour le préfixe dynamique, veuillez vérifier les "
-"contraintes dans Légende pour le préfixe dynamique"
+"Syntaxe invalide pour le préfixe dynamique/Code générateur de séquence, "
+"veuillez vérifier les contraintes dans Légende pour le préfixe "
+"dynamique/Code générateur de séquence"
 
 #. module: sequence_dynamic
 #: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
-msgid "Legend for dynamic prefix"
-msgstr "Légende pour le préfixe dynamique"
+msgid "Legend for dynamic prefix/Sequence generator code"
+msgstr "Légende pour le préfixe dynamique/Code générateur de séquence"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__related_model
@@ -90,12 +108,23 @@ msgstr "Aucun champ %s n'a été détecté dans le modèle %s"
 
 #. module: sequence_dynamic
 #: code:addons/sequence_dynamic/models/ir_sequence.py:0
-#: code:addons/sequence_dynamic/models/ir_sequence.py:0
-#: code:addons/sequence_dynamic/models/ir_sequence.py:0
 #, python-format
-msgid "No value found for %s,can't generate dynamic prefix!"
+msgid "No related model detected,can not build dynamic sequence!"
 msgstr ""
-"Aucune valeur trouvée pour %s, impossible de générer la valeur du préfixe!"
+"Modèle utilisant cette sequence n'a pas pu étre detecté,impossible de créer "
+"la séquence dynamique"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:214
+#: code:addons/sequence_dynamic/models/ir_sequence.py:220
+#: code:addons/sequence_dynamic/models/ir_sequence.py:239
+#: code:addons/sequence_dynamic/models/ir_sequence.py:244
+#, python-format
+msgid ""
+"No value found for %s,can't generate dynamic prefix/Sequence generator code!"
+msgstr ""
+"Aucune valeur trouvée pour %s, impossible de générer la valeur du "
+"préfixe/Code générateur de séquence!"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__parent_id
@@ -123,6 +152,11 @@ msgid "Sequence Type"
 msgstr "Type de séquence"
 
 #. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__sequence_generator_code
+msgid "Sequence generator code"
+msgstr "Code générateur de séquence"
+
+#. module: sequence_dynamic
 #: model:ir.model.fields.selection,name:sequence_dynamic.selection__ir_sequence__sequence_type__sequence_template
 msgid "Sequence template"
 msgstr "Modèle de séquence"
@@ -144,9 +178,33 @@ msgid "Template sequences"
 msgstr "Modèles de séquence"
 
 #. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:0
+#, python-format
+msgid "The field %s type is not authorised!"
+msgstr "Le type du champ %s n'est pas autorisé"
+
+#. module: sequence_dynamic
 #: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__parent_id
 msgid "The sequence model that create this sequence"
 msgstr "Modèle de séquence qui a généré cette séquence"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__generator_code
+msgid ""
+"This code is unique by sequence,and is used to generate new sequence or "
+"return sequence it match"
+msgstr "Ce code est unique par séquence,il est utilisé pour distinguer les séquence du même objet"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__sequence_generator_code
+msgid ""
+"This is used to generate sequence relying on the variation of the value of "
+"this code,the same codification syntax used by the Dynamic prefix "
+"codification is applicable here"
+msgstr ""
+"Ceci est utilisé pour générer une séquence s'appuyant sur la variation de la valeur de "
+"ce code, la même syntaxe de codification utilisée par le Préfixe Dynamic "
+"est applicable ici"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__related_model
@@ -170,9 +228,3 @@ msgid ""
 msgstr ""
 "le champ utilisé dans le préfixe dynamique doit être char ou many2one, le "
 "type de champ %s est %s"
-
-#. module: sequence_dynamic
-#: code:addons/sequence_dynamic/models/ir_sequence.py:171
-#, python-format
-msgid "No related model detected,can not build dynamic sequence!"
-msgstr "Modèle utilisant cette sequence n'a pas pu étre detecté,impossible de créer la séquence dynamique"

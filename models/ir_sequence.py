@@ -3,6 +3,7 @@
 
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError, UserError
+import datetime
 
 DYNAMIC_PREFIX_DELIMITER = '%'
 DYNAMIC_PREFIX_START_VAR = '('
@@ -21,10 +22,17 @@ class IrSequence(models.Model):
                                          "the fields put in the dynamic part with the controls existing on this Model)")
     dynamic_prefix_code = fields.Text(string='Dynamic prefix codification',
                                       help='Please take in account all this constraints specified under <Legend for dynamic prefix>')
+    sequence_generator_code = fields.Text(string='Sequence generator code',
+                                          help='This is used to generate sequence relying on the variation of the value of this code'
+                                               ",the same codification syntax used by the Dynamic prefix codification is applicable here")
+    generator_code = fields.Char('Generator code',readonly=True,
+                                 help='This code is unique by sequence,and is used to generate new sequence or return sequence it match')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',
                                 help='The sequence model that create this sequence')
     child_ids = fields.Many2many('ir.sequence', compute='_compute_child_ids')
     child_count = fields.Integer(compute='_compute_child_count')
+
+    _sql_constraints = [('generator_code_uniq', 'unique (generator_code,company_id)', "Generator_code name already exists !")]
 
     # FIXME: this method must be removed from here
     @api.model
@@ -59,18 +67,23 @@ class IrSequence(models.Model):
         action['context'] = dict(self._context, default_parent_id=self.id)
         return action
 
-    @api.constrains('sequence_type', 'related_model', 'dynamic_prefix_code')
+    @api.constrains('sequence_type', 'related_model', 'dynamic_prefix_code','sequence_generator_code')
     def _check_dynamic_prefix_code(self):
         if self.sequence_type == 'sequence_template' and self.related_model:
-            self._check_dynamic_prefix_code_syntax(self.dynamic_prefix_code, self.related_model.model)
+            if self.dynamic_prefix_code:
+                self._check_dynamic_prefix_code_syntax(self.dynamic_prefix_code, self.related_model.model)
+            elif self.sequence_generator_code:
+                self._check_dynamic_prefix_code_syntax(self.sequence_generator_code, self.related_model.model)
+            else:
+                raise ValidationError(_("In sequence template,at least Dynamic prefix or Sequence generator code must be used!"))
 
     @api.model
     def _check_dynamic_prefix_code_syntax(self, dynamic_prefix_code, model_name):
         valid_syntax = dynamic_prefix_code.count(DYNAMIC_PREFIX_DELIMITER) == 1 and dynamic_prefix_code.count(
             DYNAMIC_PREFIX_START_VAR) == 1 \
                        and dynamic_prefix_code.count(DYNAMIC_PREFIX_END_VAR) == 1
-        assert valid_syntax, _(
-            'Invalid syntax for the dynamic prefix,please check the rules in Legend for dynamic prefix')
+        if not valid_syntax:
+            raise ValidationError(_('Invalid syntax for the dynamic prefix/Sequence generator code,please check the rules in Legend for dynamic prefix/Sequence generator code'))
         fields = self._parse_fields_for_check(dynamic_prefix_code)
         for field in fields:
             try:
@@ -130,18 +143,25 @@ class IrSequence(models.Model):
 
     def _next_by_sequence_template(self, sequence_code=None, sequence_date=None):
         company_id = self.env.company.id
-        prefix = self._build_prefix()
-        domain = [('prefix', '=', prefix), ('company_id', 'in', [company_id, False])]
+        domain = [('company_id', 'in', [company_id, False])]
+        prefix,generator_code=False,False
+        if self.dynamic_prefix_code:
+            prefix = self._build_code('dynamic_prefix_code')
+            domain.append(('prefix', '=', prefix))
+        if self.sequence_generator_code:
+            generator_code = self._build_code('sequence_generator_code')
+            domain.append(('generator_code', '=', generator_code))
         if sequence_code:
             domain.append(('code', '=', sequence_code))
         seq_ids = self.search(domain, order='company_id')
         if not seq_ids:
-            seq_ids |= self._create_sequence_from_template(prefix)
+            seq_ids |= self._create_sequence_from_template(prefix=prefix,generator_code=generator_code)
         seq_id = seq_ids[0]
         return seq_id._next(sequence_date=sequence_date)
 
-    def _create_sequence_from_template(self, prefix):
+    def _create_sequence_from_template(self, prefix=False,generator_code=False):
         new_sequence = self.copy({'prefix': prefix,
+                                  'generator_code':generator_code,
                                   'parent_id': self.id,
                                   'sequence_type': 'sequence',
                                   'number_next': 1,
@@ -157,7 +177,7 @@ class IrSequence(models.Model):
                 })
         return new_sequence
 
-    def _build_prefix(self):
+    def _build_code(self,code_type):
         dynamic_prefix_fields = self.env.context.get('dynamic_prefix_fields', False)
         # the model using he sequence,here we hve to get theis model in the logic order,we get the model imposed in the context
         # and if it is not specified we get the model specified in the sequence template to control the dynamic fields because
@@ -172,7 +192,7 @@ class IrSequence(models.Model):
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
         record = self.env[related_model]
-        fields = self._parse_fields(self.dynamic_prefix_code)
+        fields = self._parse_fields(getattr(self,code_type))
         prefix = ''
         for field in fields:
             if field in self._parse_static_fields(self.dynamic_prefix_code):
@@ -184,17 +204,26 @@ class IrSequence(models.Model):
             except KeyError as ae:
                 raise UserError(_('No field %s detected in model %s') % (field, record._name))
             else:
-                if field_obj.type not in ('char', 'many2one'):
+                if code_type in ('dynamic_prefix_code',) and field_obj.type not in ('char', 'many2one'):
                     raise UserError(
                         _('field used in dynamic prefix must be char or many2one,the type of field %s is %s') % (
                             field_obj.string, field_obj.type))
                 if field_obj.type == 'char':
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
-                        raise UserError(_("No value found for %s,can't generate dynamic prefix!") % (field_obj.name))
+                        raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (field_obj.name))
                     prefix += val
+                elif field_obj.type not in ('many2one','one2many','many2many'):
+                    val = dynamic_prefix_fields[field_obj.name]
+                    if not val:
+                        raise UserError(
+                            _("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (
+                                field_obj.name))
+                    prefix += str(val)
                 elif field_obj.type == 'many2one':
                     prefix += self._parse_many2one_field(record, dynamic_prefix_fields, field)
+                else:
+                    raise ValidationError(_("The field %s type is not authorised!")%field_obj.description)
         return prefix
 
     def _remove_static_fields(self):
@@ -205,21 +234,26 @@ class IrSequence(models.Model):
         prefix = ''
         nested_list_fields = field.split(".")
         next_field = nested_list_fields.pop(0)
-        record = self._get_record_from_field_value(record,dynamic_prefix_fields,next_field)
+        record = self._get_record_from_field_value(record, dynamic_prefix_fields, next_field)
         if not record:
-            raise UserError(_("No value found for %s,can't generate dynamic prefix!") % (next_field))
+            raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (next_field))
         while nested_list_fields:
             next_field = nested_list_fields.pop(0)
             val = getattr(record, next_field)
             if not val:
-                raise UserError(_("No value found for %s,can't generate dynamic prefix!") % (next_field))
+                raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (next_field))
             if isinstance(val, str):
                 prefix += val
+            elif isinstance(val,int) or isinstance(val,float) or isinstance(val,bool):
+                prefix += str(val)
+            elif isinstance(val,datetime.date):
+                prefix += str(val)
             else:
                 record = val
         return prefix
-    def _get_record_from_field_value(self,record,dynamic_prefix_fields,field):
-        if isinstance(dynamic_prefix_fields[field],int):
+
+    def _get_record_from_field_value(self, record, dynamic_prefix_fields, field):
+        if isinstance(dynamic_prefix_fields[field], int):
             record_obj = self.env[record._fields[field].comodel_name]
             return record_obj.browse(dynamic_prefix_fields[field])
         else:
