@@ -1,97 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-        <record id="sequence_view_inherited" model="ir.ui.view">
-            <field name="name">sequence.view.inherited</field>
-            <field name="model">ir.sequence</field>
-            <field name="inherit_id" ref="base.sequence_view"/>
-            <field name="arch" type="xml">
-                <data>
-                    <xpath expr="//field[@name='implementation']" position="after">
-                        <field name="generator_code" attrs="{'invisible':[('generator_code','=',False)]}"/>
-                    </xpath>
-                    <xpath expr="//sheet/group[1]" position="before">
-                        <div class="oe_button_box" name="button_box">
-                            <button type="object" name="action_view_child_sequences"
-                                    class="oe_stat_button"
-                                    icon="fa-list"
-                                    attrs="{'invisible': [('child_count', '=', 0)]}">
-                                <field name="child_count" widget="statinfo" string="Sequences"/>
-                            </button>
-                        </div>
-                    </xpath>
-                    <xpath expr="//field[@name='code']" position="after">
-                        <field name="sequence_type"/>
-                    </xpath>
-                    <xpath expr="//field[@name='implementation']" position="after">
-                        <field name="related_model" options="{'no_open': True, 'no_create': True}"
-                               attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
-                    </xpath>
-                    <xpath expr="//field[@name='suffix']" position="before">
-                        <field name="dynamic_prefix_code"
-                               attrs="{'required':[('sequence_type','=','sequence_template'),('sequence_generator_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
-                        <field name="sequence_generator_code"
-                               attrs="{'required':[('sequence_type','=','sequence_template'),('dynamic_prefix_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
-                    </xpath>
-                    <xpath expr="//field[@name='prefix']" position="attributes">
-                        <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
-                    </xpath>
-                    <xpath expr="//page[@name='sequence']" position="inside">
-                        <group name="dynamic_sequence_legend"
-                               attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"
-                               string="Legend for dynamic prefix/Sequence generator code">
-                            <span colspan="2">Field in related model : %(field_name)</span>
-                            <span colspan="2">Nested field in related model : %(field_name.field_name)</span>
-                            <span colspan="2">Static prefix can be added by prefixing them by **: %(field_name,**/)</span>
-                        </group>
-                        <group name="dynamic_sequence_rules" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
-                            <span colspan="2">The type of the field in dynamic prefix must be char</span>
-                            <span colspan="2">In Sequence generator code,all the types are authorized but One2many and Many2many</span>
-                            <span colspan="2">Combination of fields in dynamic prefix/Sequence generator code must be comma-separated and the order will be taken in account:%(field_name,field_name.field_name) </span>
-                        </group>
-                    </xpath>
-                </data>
-            </field>
-        </record>
-
-        <record id="sequence_view_tree_inherited" model="ir.ui.view">
-            <field name="name">sequence.view.tree.inherited</field>
-            <field name="model">ir.sequence</field>
-            <field name="inherit_id" ref="base.sequence_view_tree"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='prefix']" position="after">
-                    <field name="generator_code"/>
+    <record id="sequence_view_inherited" model="ir.ui.view">
+        <field name="name">sequence.view.inherited</field>
+        <field name="model">ir.sequence</field>
+        <field name="inherit_id" ref="base.sequence_view"/>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//field[@name='implementation']" position="after">
+                    <field name="generator_code" attrs="{'invisible':[('generator_code','=',False)]}"/>
                 </xpath>
-            </field>
-        </record>
-
-        <record id="view_sequence_search_inherited" model="ir.ui.view">
-            <field name="name">view.sequence.search.inherited</field>
-            <field name="model">ir.sequence</field>
-            <field name="inherit_id" ref="base.view_sequence_search"/>
-            <field name="arch" type="xml">
+                <xpath expr="//sheet/group[1]" position="before">
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_child_sequences"
+                                class="oe_stat_button"
+                                icon="fa-list"
+                                attrs="{'invisible': [('child_count', '=', 0)]}">
+                            <field name="child_count" widget="statinfo" string="Sequences"/>
+                        </button>
+                    </div>
+                </xpath>
                 <xpath expr="//field[@name='code']" position="after">
-                    <field name="generator_code"/>
+                    <field name="sequence_type"/>
                 </xpath>
-            </field>
-        </record>
+                <xpath expr="//field[@name='implementation']" position="after">
+                    <field name="related_model" options="{'no_open': True, 'no_create': True}"
+                           attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                </xpath>
+                <xpath expr="//field[@name='suffix']" position="before">
+                    <field name="dynamic_prefix_code"
+                           attrs="{'required':[('sequence_type','=','sequence_template'),('sequence_generator_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    <field name="sequence_generator_code"
+                           attrs="{'required':[('sequence_type','=','sequence_template'),('dynamic_prefix_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    <label for="default_sequence_id" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    <div name="default_sequence_id" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
+                        <field name="default_sequence_id" options="{'no_create':True,'no_edit':True}"/>
+                        <div class="oe_grey">
+                            Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null
+                        </div>
+                    </div>
+                </xpath>
+                <xpath expr="//field[@name='prefix']" position="attributes">
+                    <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
+                </xpath>
+                <xpath expr="//page[@name='sequence']" position="inside">
+                    <group name="dynamic_sequence_legend"
+                           attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"
+                           string="Legend for dynamic prefix/Sequence generator code">
+                        <span colspan="2">Field in related model : %(field_name)</span>
+                        <span colspan="2">Nested field in related model : %(field_name.field_name)</span>
+                        <span colspan="2">Static prefix can be added by prefixing them by **: %(field_name,**/)</span>
+                    </group>
+                    <group name="dynamic_sequence_rules"
+                           attrs="{'invisible':[('sequence_type','!=','sequence_template')]}">
+                        <span colspan="2">The type of the field in dynamic prefix must be char</span>
+                        <span colspan="2">In Sequence generator code,all the types are authorized but One2many and
+                            Many2many
+                        </span>
+                        <span colspan="2">Combination of fields in dynamic prefix/Sequence generator code must be
+                            comma-separated and the order will be taken in account:%(field_name,field_name.field_name)
+                        </span>
+                    </group>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <record id="sequence_view_tree_inherited" model="ir.ui.view">
+        <field name="name">sequence.view.tree.inherited</field>
+        <field name="model">ir.sequence</field>
+        <field name="inherit_id" ref="base.sequence_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='prefix']" position="after">
+                <field name="generator_code"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sequence_search_inherited" model="ir.ui.view">
+        <field name="name">view.sequence.search.inherited</field>
+        <field name="model">ir.sequence</field>
+        <field name="inherit_id" ref="base.view_sequence_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="generator_code"/>
+            </xpath>
+        </field>
+    </record>
 
 
-        <record id="sequence_template_view_tree" model="ir.ui.view">
-            <field name="model">ir.sequence</field>
-            <field name="arch" type="xml">
-                <tree string="Sequences">
-                    <field name="code"/>
-                    <field name="name"/>
-                    <field name="related_model"/>
-                    <field name="dynamic_prefix_code"/>
-                    <field name="padding"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
-                    <field name="number_next_actual" string="Next Number"/>
-                    <field name="number_increment"/>
-                    <field name="implementation"/>
-                </tree>
-            </field>
-        </record>
+    <record id="sequence_template_view_tree" model="ir.ui.view">
+        <field name="model">ir.sequence</field>
+        <field name="arch" type="xml">
+            <tree string="Sequences">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="related_model"/>
+                <field name="dynamic_prefix_code"/>
+                <field name="padding"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="number_next_actual" string="Next Number"/>
+                <field name="number_increment"/>
+                <field name="implementation"/>
+            </tree>
+        </field>
+    </record>
 
 </odoo>

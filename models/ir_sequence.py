@@ -25,6 +25,7 @@ class IrSequence(models.Model):
     sequence_generator_code = fields.Text(string='Sequence generator code',
                                           help='This is used to generate sequence relying on the variation of the value of this code'
                                                ",the same codification syntax used by the Dynamic prefix codification is applicable here")
+    default_sequence_id = fields.Many2one('ir.sequence',string='Default sequence',help="Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null")
     generator_code = fields.Char('Generator code',readonly=True,
                                  help='This code is unique by sequence,and is used to generate new sequence or return sequence it match')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',
@@ -147,9 +148,16 @@ class IrSequence(models.Model):
         prefix,generator_code=False,False
         if self.dynamic_prefix_code:
             prefix = self._build_code('dynamic_prefix_code')
+            if not prefix:
+                raise ValidationError(_("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
             domain.append(('prefix', '=', prefix))
         if self.sequence_generator_code:
             generator_code = self._build_code('sequence_generator_code')
+            if not generator_code:
+                # in the case we have default sequence to use
+                if self.default_sequence_id:
+                    return self.default_sequence_id._next(sequence_date=sequence_date)
+                raise ValidationError(_("Some fields used in the Sequence generator code are not defined,can not proceed!"))
             domain.append(('generator_code', '=', generator_code))
         if sequence_code:
             domain.append(('code', '=', sequence_code))
@@ -211,17 +219,18 @@ class IrSequence(models.Model):
                 if field_obj.type == 'char':
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
-                        raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (field_obj.name))
+                        return False
                     prefix += val
                 elif field_obj.type not in ('many2one','one2many','many2many'):
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
-                        raise UserError(
-                            _("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (
-                                field_obj.name))
+                        return False
                     prefix += str(val)
                 elif field_obj.type == 'many2one':
-                    prefix += self._parse_many2one_field(record, dynamic_prefix_fields, field)
+                    val = self._parse_many2one_field(record, dynamic_prefix_fields, field)
+                    if not val:
+                        return False
+                    prefix += val
                 else:
                     raise ValidationError(_("The field %s type is not authorised!")%field_obj.description)
         return prefix
@@ -236,12 +245,12 @@ class IrSequence(models.Model):
         next_field = nested_list_fields.pop(0)
         record = self._get_record_from_field_value(record, dynamic_prefix_fields, next_field)
         if not record:
-            raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (next_field))
+            return False
         while nested_list_fields:
             next_field = nested_list_fields.pop(0)
             val = getattr(record, next_field)
             if not val:
-                raise UserError(_("No value found for %s,can't generate dynamic prefix/Sequence generator code!") % (next_field))
+                return False
             if isinstance(val, str):
                 prefix += val
             elif isinstance(val,int) or isinstance(val,float) or isinstance(val,bool):

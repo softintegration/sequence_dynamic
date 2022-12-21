@@ -228,3 +228,39 @@ msgid ""
 msgstr ""
 "le champ utilisé dans le préfixe dynamique doit être char ou many2one, le "
 "type de champ %s est %s"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:152
+#, python-format
+msgid ""
+"Some fields used to generate dynamic sequence prefix are not defined,can not"
+" proceed!"
+msgstr ""
+"Certains champs utilisés pour générer le préfixe dynamique ne sont pas définis,impossible de"
+" continuer!"
+
+#. module: sequence_dynamic
+#: code:addons/sequence_dynamic/models/ir_sequence.py:160
+#, python-format
+msgid ""
+"Some fields used in the Sequence generator code are not defined,can not "
+"proceed!"
+msgstr ""
+"Certains champs utilisés dans le code générateur de séquence ne sont pas définis,impossible de"
+" continuer!"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__default_sequence_id
+msgid "Default sequence"
+msgstr "Séquence par défaut"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__default_sequence_id
+#: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
+msgid ""
+"Use a default sequence if you want to generate a reference even in the case "
+"where one or more values among those used in the sequence generator code are"
+" null"
+msgstr ""
+"Utilisez une séquence par défaut si vous souhaitez générer une référence même dans le cas"
+" où une ou plusieurs valeurs parmi celles utilisées dans le code générateur de séquence sont nulles"
