@@ -213,7 +213,7 @@ class IrSequence(models.Model):
         fields = self._parse_fields(getattr(self, code_type))
         prefix = ''
         for field in fields:
-            if field in self._parse_static_fields(self.dynamic_prefix_code):
+            if field in self._parse_static_fields(getattr(self, code_type)):
                 prefix += self._parse_static_field(field)
                 continue
             try:
