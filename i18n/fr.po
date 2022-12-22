@@ -264,3 +264,17 @@ msgid ""
 msgstr ""
 "Utilisez une séquence par défaut si vous souhaitez générer une référence même dans le cas"
 " où une ou plusieurs valeurs parmi celles utilisées dans le code générateur de séquence sont nulles"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__generate_new_sequence
+msgid "Generate sequence by format"
+msgstr "Générer une séquence par format"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,help:sequence_dynamic.field_ir_sequence__generate_new_sequence
+msgid ""
+"Select this if you want to generate new sequence for each new format "
+"detected"
+msgstr ""
+"Sélectionnez cette option si vous souhaitez générer une nouvelle séquence pour chaque nouveau format "
+"détectée"

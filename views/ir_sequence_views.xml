@@ -30,6 +30,9 @@
                 <xpath expr="//field[@name='suffix']" position="before">
                     <field name="dynamic_prefix_code"
                            attrs="{'required':[('sequence_type','=','sequence_template'),('sequence_generator_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
+                    <field name="generate_new_sequence"
+                            attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"
+                            widget="boolean_toggle"/>
                     <field name="sequence_generator_code"
                            attrs="{'required':[('sequence_type','=','sequence_template'),('dynamic_prefix_code','=',False)],'invisible':[('sequence_type','!=','sequence_template')]}"/>
                     <label for="default_sequence_id" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>

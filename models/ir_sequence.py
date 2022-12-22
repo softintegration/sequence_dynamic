@@ -22,18 +22,22 @@ class IrSequence(models.Model):
                                          "the fields put in the dynamic part with the controls existing on this Model)")
     dynamic_prefix_code = fields.Text(string='Dynamic prefix codification',
                                       help='Please take in account all this constraints specified under <Legend for dynamic prefix>')
+    generate_new_sequence = fields.Boolean(string='Generate sequence by format',default=True,
+                                           help="Select this if you want to generate new sequence for each new format detected")
     sequence_generator_code = fields.Text(string='Sequence generator code',
                                           help='This is used to generate sequence relying on the variation of the value of this code'
                                                ",the same codification syntax used by the Dynamic prefix codification is applicable here")
-    default_sequence_id = fields.Many2one('ir.sequence',string='Default sequence',help="Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null")
-    generator_code = fields.Char('Generator code',readonly=True,
+    default_sequence_id = fields.Many2one('ir.sequence', string='Default sequence',
+                                          help="Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null")
+    generator_code = fields.Char('Generator code', readonly=True,
                                  help='This code is unique by sequence,and is used to generate new sequence or return sequence it match')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',
                                 help='The sequence model that create this sequence')
     child_ids = fields.Many2many('ir.sequence', compute='_compute_child_ids')
     child_count = fields.Integer(compute='_compute_child_count')
 
-    _sql_constraints = [('generator_code_uniq', 'unique (generator_code,company_id)', "Generator_code name already exists !")]
+    _sql_constraints = [
+        ('generator_code_uniq', 'unique (generator_code,company_id)', "Generator_code name already exists !")]
 
     # FIXME: this method must be removed from here
     @api.model
@@ -68,7 +72,7 @@ class IrSequence(models.Model):
         action['context'] = dict(self._context, default_parent_id=self.id)
         return action
 
-    @api.constrains('sequence_type', 'related_model', 'dynamic_prefix_code','sequence_generator_code')
+    @api.constrains('sequence_type', 'related_model', 'dynamic_prefix_code', 'sequence_generator_code')
     def _check_dynamic_prefix_code(self):
         if self.sequence_type == 'sequence_template' and self.related_model:
             if self.dynamic_prefix_code:
@@ -76,7 +80,8 @@ class IrSequence(models.Model):
             elif self.sequence_generator_code:
                 self._check_dynamic_prefix_code_syntax(self.sequence_generator_code, self.related_model.model)
             else:
-                raise ValidationError(_("In sequence template,at least Dynamic prefix or Sequence generator code must be used!"))
+                raise ValidationError(
+                    _("In sequence template,at least Dynamic prefix or Sequence generator code must be used!"))
 
     @api.model
     def _check_dynamic_prefix_code_syntax(self, dynamic_prefix_code, model_name):
@@ -84,7 +89,8 @@ class IrSequence(models.Model):
             DYNAMIC_PREFIX_START_VAR) == 1 \
                        and dynamic_prefix_code.count(DYNAMIC_PREFIX_END_VAR) == 1
         if not valid_syntax:
-            raise ValidationError(_('Invalid syntax for the dynamic prefix/Sequence generator code,please check the rules in Legend for dynamic prefix/Sequence generator code'))
+            raise ValidationError(
+                _('Invalid syntax for the dynamic prefix/Sequence generator code,please check the rules in Legend for dynamic prefix/Sequence generator code'))
         fields = self._parse_fields_for_check(dynamic_prefix_code)
         for field in fields:
             try:
@@ -145,11 +151,14 @@ class IrSequence(models.Model):
     def _next_by_sequence_template(self, sequence_code=None, sequence_date=None):
         company_id = self.env.company.id
         domain = [('company_id', 'in', [company_id, False])]
-        prefix,generator_code=False,False
+        prefix, generator_code = False, False
         if self.dynamic_prefix_code:
             prefix = self._build_code('dynamic_prefix_code')
             if not prefix:
-                raise ValidationError(_("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
+                raise ValidationError(
+                    _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
+            if not self.generate_new_sequence:
+                return prefix
             domain.append(('prefix', '=', prefix))
         if self.sequence_generator_code:
             generator_code = self._build_code('sequence_generator_code')
@@ -157,19 +166,20 @@ class IrSequence(models.Model):
                 # in the case we have default sequence to use
                 if self.default_sequence_id:
                     return self.default_sequence_id._next(sequence_date=sequence_date)
-                raise ValidationError(_("Some fields used in the Sequence generator code are not defined,can not proceed!"))
+                raise ValidationError(
+                    _("Some fields used in the Sequence generator code are not defined,can not proceed!"))
             domain.append(('generator_code', '=', generator_code))
         if sequence_code:
             domain.append(('code', '=', sequence_code))
         seq_ids = self.search(domain, order='company_id')
         if not seq_ids:
-            seq_ids |= self._create_sequence_from_template(prefix=prefix,generator_code=generator_code)
+            seq_ids |= self._create_sequence_from_template(prefix=prefix, generator_code=generator_code)
         seq_id = seq_ids[0]
         return seq_id._next(sequence_date=sequence_date)
 
-    def _create_sequence_from_template(self, prefix=False,generator_code=False):
+    def _create_sequence_from_template(self, prefix=False, generator_code=False):
         new_sequence = self.copy({'prefix': prefix,
-                                  'generator_code':generator_code,
+                                  'generator_code': generator_code,
                                   'parent_id': self.id,
                                   'sequence_type': 'sequence',
                                   'number_next': 1,
@@ -185,7 +195,7 @@ class IrSequence(models.Model):
                 })
         return new_sequence
 
-    def _build_code(self,code_type):
+    def _build_code(self, code_type):
         dynamic_prefix_fields = self.env.context.get('dynamic_prefix_fields', False)
         # the model using he sequence,here we hve to get theis model in the logic order,we get the model imposed in the context
         # and if it is not specified we get the model specified in the sequence template to control the dynamic fields because
@@ -200,7 +210,7 @@ class IrSequence(models.Model):
         if not dynamic_prefix_fields:
             raise UserError(_("No dynamic prefix fields has been found!"))
         record = self.env[related_model]
-        fields = self._parse_fields(getattr(self,code_type))
+        fields = self._parse_fields(getattr(self, code_type))
         prefix = ''
         for field in fields:
             if field in self._parse_static_fields(self.dynamic_prefix_code):
@@ -221,7 +231,7 @@ class IrSequence(models.Model):
                     if not val:
                         return False
                     prefix += val
-                elif field_obj.type not in ('many2one','one2many','many2many'):
+                elif field_obj.type not in ('many2one', 'one2many', 'many2many'):
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
                         return False
@@ -232,7 +242,7 @@ class IrSequence(models.Model):
                         return False
                     prefix += val
                 else:
-                    raise ValidationError(_("The field %s type is not authorised!")%field_obj.description)
+                    raise ValidationError(_("The field %s type is not authorised!") % field_obj.description)
         return prefix
 
     def _remove_static_fields(self):
@@ -253,9 +263,9 @@ class IrSequence(models.Model):
                 return False
             if isinstance(val, str):
                 prefix += val
-            elif isinstance(val,int) or isinstance(val,float) or isinstance(val,bool):
+            elif isinstance(val, int) or isinstance(val, float) or isinstance(val, bool):
                 prefix += str(val)
-            elif isinstance(val,datetime.date):
+            elif isinstance(val, datetime.date):
                 prefix += str(val)
             else:
                 record = val
