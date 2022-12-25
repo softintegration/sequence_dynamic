@@ -259,7 +259,8 @@ class IrSequence(models.Model):
         while nested_list_fields:
             next_field = nested_list_fields.pop(0)
             val = getattr(record, next_field)
-            if not val:
+            # Here we have to add this (val != 0) because in python 0 is considered as False
+            if not val and val != 0:
                 return False
             if isinstance(val, str):
                 prefix += val
