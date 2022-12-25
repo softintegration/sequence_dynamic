@@ -29,7 +29,7 @@ class IrSequence(models.Model):
                                                ",the same codification syntax used by the Dynamic prefix codification is applicable here")
     default_sequence_id = fields.Many2one('ir.sequence', string='Default sequence',
                                           help="Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null")
-    generator_code = fields.Char('Generator code', readonly=True,
+    generator_code = fields.Char('Generator code', readonly=False,
                                  help='This code is unique by sequence,and is used to generate new sequence or return sequence it match')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',
                                 help='The sequence model that create this sequence')
