@@ -29,6 +29,8 @@ class IrSequence(models.Model):
                                                ",the same codification syntax used by the Dynamic prefix codification is applicable here")
     default_sequence_id = fields.Many2one('ir.sequence', string='Default sequence',
                                           help="Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null")
+    dynamic_suffix_code = fields.Text(string='Dynamic suffix codification',
+                                      help='Please take in account all this constraints specified under <Legend for dynamic prefix>')
     generator_code = fields.Char('Generator code', readonly=False,
                                  help='This code is unique by sequence,and is used to generate new sequence or return sequence it match')
     parent_id = fields.Many2one('ir.sequence', string='Parent sequence',
@@ -139,14 +141,28 @@ class IrSequence(models.Model):
         seq = seq_ids[0]
         if seq.sequence_type == 'sequence':
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
-        return seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+        name =  seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+        if seq.dynamic_suffix_code:
+            suffix = seq._build_code('dynamic_suffix_code')
+            if not suffix:
+                raise ValidationError(
+                    _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
+            name = '%s %s'%(name,suffix)
+        return name
 
     def next_by_id(self, sequence_date=None):
         """ Inherit this method to request the template sequence if this is the case."""
         self.check_access_rights('read')
         if self.sequence_type == 'sequence':
             return super(IrSequence, self).next_by_id(sequence_date=sequence_date)
-        return self._next_by_sequence_template(None, sequence_date=sequence_date)
+        name = self._next_by_sequence_template(None, sequence_date=sequence_date)
+        if self.dynamic_suffix_code:
+            suffix = self._build_code('dynamic_suffix_code')
+            if not suffix:
+                raise ValidationError(
+                    _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
+            name = '%s %s'%(name,suffix)
+        return name
 
     def _next_by_sequence_template(self, sequence_code=None, sequence_date=None):
         company_id = self.env.company.id

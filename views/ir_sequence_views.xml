@@ -42,6 +42,7 @@
                             Use a default sequence if you want to generate a reference even in the case where one or more values among those used in the sequence generator code are null
                         </div>
                     </div>
+                    <field name="dynamic_suffix_code" attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"/>
                 </xpath>
                 <xpath expr="//field[@name='prefix']" position="attributes">
                     <attribute name="attrs">{'invisible':[('sequence_type','!=','sequence')]}</attribute>
@@ -49,7 +50,7 @@
                 <xpath expr="//page[@name='sequence']" position="inside">
                     <group name="dynamic_sequence_legend"
                            attrs="{'invisible':[('sequence_type','!=','sequence_template')]}"
-                           string="Legend for dynamic prefix/Sequence generator code">
+                           string="Legend for dynamic prefix/Dynamic suffix/Sequence generator code">
                         <span colspan="2">Field in related model : %(field_name)</span>
                         <span colspan="2">Nested field in related model : %(field_name.field_name)</span>
                         <span colspan="2">Static prefix can be added by prefixing them by **: %(field_name,**/)</span>

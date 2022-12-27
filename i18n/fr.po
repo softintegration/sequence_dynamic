@@ -80,8 +80,8 @@ msgstr ""
 
 #. module: sequence_dynamic
 #: model_terms:ir.ui.view,arch_db:sequence_dynamic.sequence_view_inherited
-msgid "Legend for dynamic prefix/Sequence generator code"
-msgstr "Légende pour le préfixe dynamique/Code générateur de séquence"
+msgid "Legend for dynamic prefix/Dynamic suffix/Sequence generator code"
+msgstr "Légende pour le préfixe dynamique/Suffixe dynamique/Code générateur de séquence"
 
 #. module: sequence_dynamic
 #: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__related_model
@@ -278,3 +278,8 @@ msgid ""
 msgstr ""
 "Sélectionnez cette option si vous souhaitez générer une nouvelle séquence pour chaque nouveau format "
 "détectée"
+
+#. module: sequence_dynamic
+#: model:ir.model.fields,field_description:sequence_dynamic.field_ir_sequence__dynamic_suffix_code
+msgid "Dynamic suffix codification"
+msgstr "Suffixe dynamique"
