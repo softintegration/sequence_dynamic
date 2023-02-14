@@ -180,8 +180,10 @@ class IrSequence(models.Model):
             generator_code = self._build_code('sequence_generator_code')
             if not generator_code:
                 # in the case we have default sequence to use
-                if self.default_sequence_id:
+                if self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence':
                     return self.default_sequence_id._next(sequence_date=sequence_date)
+                elif self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence_template':
+                    return self.default_sequence_id._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
                 raise ValidationError(
                     _("Some fields used in the Sequence generator code are not defined,can not proceed!"))
             domain.append(('generator_code', '=', generator_code))
