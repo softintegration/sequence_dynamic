@@ -97,6 +97,7 @@
         <field name="model">ir.sequence</field>
         <field name="arch" type="xml">
             <tree string="Sequences">
+                <field name="sequence" widget="handle"/>
                 <field name="code"/>
                 <field name="name"/>
                 <field name="related_model"/>

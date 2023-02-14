@@ -14,6 +14,7 @@ DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER = '**'
 class IrSequence(models.Model):
     _inherit = 'ir.sequence'
 
+    sequence = fields.Integer(string='Sequence',help="Order the Sequence templates")
     sequence_type = fields.Selection([('sequence', 'Sequence'),
                                       ('sequence_template', 'Sequence template')], required=True, default='sequence')
     related_model = fields.Many2one('ir.model', string='Model using this sequence',
@@ -134,11 +135,10 @@ class IrSequence(models.Model):
     def next_by_code(self, sequence_code, sequence_date=None):
         """ Inherit this method to request the template sequence if this is the case."""
         company_id = self.env.company.id
-        seq_ids = self.search([('code', '=', sequence_code), ('company_id', 'in', [company_id, False])],
-                              order='company_id,sequence_type DESC')
-        if not seq_ids:
+        seq = self.search([('code', '=', sequence_code), ('company_id', 'in', [company_id, False])],
+                              order='sequence ASC,company_id,sequence_type DESC',limit=1)
+        if not seq:
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
-        seq = seq_ids[0]
         if seq.sequence_type == 'sequence':
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
         name =  seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
