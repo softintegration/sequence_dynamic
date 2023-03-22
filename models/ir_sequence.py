@@ -135,8 +135,11 @@ class IrSequence(models.Model):
     def next_by_code(self, sequence_code, sequence_date=None):
         """ Inherit this method to request the template sequence if this is the case."""
         company_id = self.env.company.id
+        # Here the sequence templates are with high priority in case there are sequences and sequence templates with the same code
+        # and after that the sequence templates will be ordered by the sequence field,this is because we rely on the assumption that
+        # if there are sequence template ,so the admin want the sequence to be managed dynamically
         seq = self.search([('code', '=', sequence_code), ('company_id', 'in', [company_id, False])],
-                              order='sequence ASC,company_id,sequence_type DESC',limit=1)
+                              order='sequence_type DESC,sequence ASC,company_id',limit=1)
         if not seq:
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
         if seq.sequence_type == 'sequence':
@@ -215,7 +218,7 @@ class IrSequence(models.Model):
 
     def _build_code(self, code_type):
         dynamic_prefix_fields = self.env.context.get('dynamic_prefix_fields', False)
-        # the model using he sequence,here we hve to get theis model in the logic order,we get the model imposed in the context
+        # the model using he sequence,here we hve to get this model in the logic order,we get the model imposed in the context
         # and if it is not specified we get the model specified in the sequence template to control the dynamic fields because
         # this settings is considered as explicit specification of the model,and if this is not specified as well,we suppose that th model
         # is the code of the sequence ,this is the last assumption that can be done

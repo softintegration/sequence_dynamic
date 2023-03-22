@@ -2,7 +2,7 @@
 
 {
     'name': 'Dynamic sequence',
-    'version': '1.0.4',
+    'version': '1.0.4.1',
     'author':'Soft-integration',
     'category': 'Base',
     'summary': 'Dynamic sequence',
