@@ -282,7 +282,6 @@ class IrSequence(models.Model):
         # if the format of padding in incorrect we have to return
         if field.count(DYNAMIC_PREFIX_PADDING_START) > 1 or field.count(DYNAMIC_PREFIX_PADDING_END) > 1:
             return field, 0
-        print(field)
         if field.index(DYNAMIC_PREFIX_PADDING_START) > field.index(DYNAMIC_PREFIX_PADDING_END):
             return field, 0
         if field[len(field) - 1] != DYNAMIC_PREFIX_PADDING_END:
