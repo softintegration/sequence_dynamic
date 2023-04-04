@@ -9,12 +9,14 @@ DYNAMIC_PREFIX_DELIMITER = '%'
 DYNAMIC_PREFIX_START_VAR = '('
 DYNAMIC_PREFIX_END_VAR = ')'
 DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER = '**'
+DYNAMIC_PREFIX_PADDING_START = '['
+DYNAMIC_PREFIX_PADDING_END = ']'
 
 
 class IrSequence(models.Model):
     _inherit = 'ir.sequence'
 
-    sequence = fields.Integer(string='Sequence',help="Order the Sequence templates")
+    sequence = fields.Integer(string='Sequence', help="Order the Sequence templates")
     sequence_type = fields.Selection([('sequence', 'Sequence'),
                                       ('sequence_template', 'Sequence template')], required=True, default='sequence')
     related_model = fields.Many2one('ir.model', string='Model using this sequence',
@@ -23,7 +25,7 @@ class IrSequence(models.Model):
                                          "the fields put in the dynamic part with the controls existing on this Model)")
     dynamic_prefix_code = fields.Text(string='Dynamic prefix codification',
                                       help='Please take in account all this constraints specified under <Legend for dynamic prefix>')
-    generate_new_sequence = fields.Boolean(string='Generate sequence by format',default=True,
+    generate_new_sequence = fields.Boolean(string='Generate sequence by format', default=True,
                                            help="Select this if you want to generate new sequence for each new format detected")
     sequence_generator_code = fields.Text(string='Sequence generator code',
                                           help='This is used to generate sequence relying on the variation of the value of this code'
@@ -139,18 +141,18 @@ class IrSequence(models.Model):
         # and after that the sequence templates will be ordered by the sequence field,this is because we rely on the assumption that
         # if there are sequence template ,so the admin want the sequence to be managed dynamically
         seq = self.search([('code', '=', sequence_code), ('company_id', 'in', [company_id, False])],
-                              order='sequence_type DESC,sequence ASC,company_id',limit=1)
+                          order='sequence_type DESC,sequence ASC,company_id', limit=1)
         if not seq:
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
         if seq.sequence_type == 'sequence':
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
-        name =  seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+        name = seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
         if seq.dynamic_suffix_code:
             suffix = seq._build_code('dynamic_suffix_code')
             if not suffix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
-            name = '%s %s'%(name,suffix)
+            name = '%s %s' % (name, suffix)
         return name
 
     def next_by_id(self, sequence_date=None):
@@ -164,7 +166,7 @@ class IrSequence(models.Model):
             if not suffix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
-            name = '%s %s'%(name,suffix)
+            name = '%s %s' % (name, suffix)
         return name
 
     def _next_by_sequence_template(self, sequence_code=None, sequence_date=None):
@@ -186,7 +188,8 @@ class IrSequence(models.Model):
                 if self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence':
                     return self.default_sequence_id._next(sequence_date=sequence_date)
                 elif self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence_template':
-                    return self.default_sequence_id._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+                    return self.default_sequence_id._next_by_sequence_template(sequence_code,
+                                                                               sequence_date=sequence_date)
                 raise ValidationError(
                     _("Some fields used in the Sequence generator code are not defined,can not proceed!"))
             domain.append(('generator_code', '=', generator_code))
@@ -238,6 +241,8 @@ class IrSequence(models.Model):
                 prefix += self._parse_static_field(field)
                 continue
             try:
+                # we have to parse the padding from the field codification
+                field, padding = self._get_field_padding(field)
                 # get only the field name in the case of many2one field (not all the chain)
                 field_obj = record._fields[field.split(".")[0]]
             except KeyError as ae:
@@ -256,7 +261,10 @@ class IrSequence(models.Model):
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
                         return False
-                    prefix += str(val)
+                    if not padding:
+                        prefix += str(val)
+                    else:
+                        prefix = '%%0%sd' % padding % val
                 elif field_obj.type == 'many2one':
                     val = self._parse_many2one_field(record, dynamic_prefix_fields, field)
                     if not val:
@@ -265,6 +273,27 @@ class IrSequence(models.Model):
                 else:
                     raise ValidationError(_("The field %s type is not authorised!") % field_obj.description)
         return prefix
+
+    @api.model
+    def _get_field_padding(self, field):
+        # if no padding in field
+        if field.find(DYNAMIC_PREFIX_PADDING_START) == -1 or field.find(DYNAMIC_PREFIX_PADDING_END) == -1:
+            return field, 0
+        # if the format of padding in incorrect we have to return
+        if field.count(DYNAMIC_PREFIX_PADDING_START) > 1 or field.count(DYNAMIC_PREFIX_PADDING_END) > 1:
+            return field, 0
+        print(field)
+        if field.index(DYNAMIC_PREFIX_PADDING_START) > field.index(DYNAMIC_PREFIX_PADDING_END):
+            return field, 0
+        if field[len(field) - 1] != DYNAMIC_PREFIX_PADDING_END:
+            return field, 0
+        field = field.replace(DYNAMIC_PREFIX_PADDING_END, "")
+        field_padding_tab = field.split(DYNAMIC_PREFIX_PADDING_START)
+        try:
+            field, padding = field_padding_tab[0], int(field_padding_tab[1])
+        except ValueError as va:
+            raise ValidationError(_("Padding in field %s must be integer!") % field_padding_tab[0])
+        return field, padding
 
     def _remove_static_fields(self):
         pass
