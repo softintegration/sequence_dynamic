@@ -264,7 +264,7 @@ class IrSequence(models.Model):
                     if not padding:
                         prefix += str(val)
                     else:
-                        prefix = '%%0%sd' % padding % val
+                        prefix += '%%0%sd' % padding % val
                 elif field_obj.type == 'many2one':
                     val = self._parse_many2one_field(record, dynamic_prefix_fields, field)
                     if not val:
