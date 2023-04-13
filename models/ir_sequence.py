@@ -12,6 +12,10 @@ DYNAMIC_PREFIX_STATIC_VALUE_DELIMITER = '**'
 DYNAMIC_PREFIX_PADDING_START = '['
 DYNAMIC_PREFIX_PADDING_END = ']'
 
+TYPE_DYNAMIC_SUFF_CODE = 'dynamic_suffix_code'
+TYPE_DYNAMIC_PREF_CODE = 'dynamic_prefix_code'
+TYPE_CODE_GENERATOR = 'sequence_generator_code'
+
 
 class IrSequence(models.Model):
     _inherit = 'ir.sequence'
@@ -148,7 +152,8 @@ class IrSequence(models.Model):
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
         name = seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
         if seq.dynamic_suffix_code:
-            suffix = seq._build_code('dynamic_suffix_code')
+            # The suffix code is not used as unique element of sequence generation so if the value of some fields are null we have to proceed
+            suffix = seq._build_code(TYPE_DYNAMIC_SUFF_CODE,fields_check_strict=False)
             if not suffix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
@@ -162,7 +167,8 @@ class IrSequence(models.Model):
             return super(IrSequence, self).next_by_id(sequence_date=sequence_date)
         name = self._next_by_sequence_template(None, sequence_date=sequence_date)
         if self.dynamic_suffix_code:
-            suffix = self._build_code('dynamic_suffix_code')
+            # The suffix code is not used as unique element of sequence generation so if the value of some fields are null we have to proceed
+            suffix = self._build_code(TYPE_DYNAMIC_SUFF_CODE,fields_check_strict=False)
             if not suffix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
@@ -174,7 +180,7 @@ class IrSequence(models.Model):
         domain = [('company_id', 'in', [company_id, False])]
         prefix, generator_code = False, False
         if self.dynamic_prefix_code:
-            prefix = self._build_code('dynamic_prefix_code')
+            prefix = self._build_code(TYPE_DYNAMIC_PREF_CODE)
             if not prefix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
@@ -182,7 +188,7 @@ class IrSequence(models.Model):
                 return prefix
             domain.append(('prefix', '=', prefix))
         if self.sequence_generator_code:
-            generator_code = self._build_code('sequence_generator_code')
+            generator_code = self._build_code(TYPE_CODE_GENERATOR)
             if not generator_code:
                 # in the case we have default sequence to use
                 if self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence':
@@ -219,7 +225,14 @@ class IrSequence(models.Model):
                 })
         return new_sequence
 
-    def _build_code(self, code_type):
+    def _build_code(self, code_type,fields_check_strict=True):
+        """
+        This method is used to generate code instance relying on the fields of the model
+        :param code_type (char):used to determine the type of the code dynamic_suffix_code,dynamic_prefix_code...,the behaviour
+        of the method will change depending on the behaviour of this parameter
+        :param fields_check_strict (bool):if this parameter is True,this method will return False if any of the fields
+        is null,otherwise it will return the found code and let the check responsability to the caller method
+        """
         dynamic_prefix_fields = self.env.context.get('dynamic_prefix_fields', False)
         # the model using he sequence,here we hve to get this model in the logic order,we get the model imposed in the context
         # and if it is not specified we get the model specified in the sequence template to control the dynamic fields because
@@ -248,27 +261,36 @@ class IrSequence(models.Model):
             except KeyError as ae:
                 raise UserError(_('No field %s detected in model %s') % (field, record._name))
             else:
-                if code_type in ('dynamic_prefix_code',) and field_obj.type not in ('char', 'many2one'):
+                if code_type in (TYPE_DYNAMIC_PREF_CODE,) and field_obj.type not in ('char', 'many2one'):
                     raise UserError(
                         _('field used in dynamic prefix must be char or many2one,the type of field %s is %s') % (
                             field_obj.string, field_obj.type))
                 if field_obj.type == 'char':
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
-                        return False
+                        if fields_check_strict:
+                            return False
+                        else:
+                            val = ''
                     prefix += val
                 elif field_obj.type not in ('many2one', 'one2many', 'many2many'):
                     val = dynamic_prefix_fields[field_obj.name]
                     if not val:
-                        return False
-                    if not padding:
+                        if fields_check_strict:
+                            return False
+                        else:
+                            val = ''
+                    if not padding or val == '':
                         prefix += str(val)
                     else:
                         prefix += '%%0%sd' % padding % val
                 elif field_obj.type == 'many2one':
                     val = self._parse_many2one_field(record, dynamic_prefix_fields, field)
                     if not val:
-                        return False
+                        if fields_check_strict:
+                            return False
+                        else:
+                            val = ''
                     prefix += val
                 else:
                     raise ValidationError(_("The field %s type is not authorised!") % field_obj.description)
