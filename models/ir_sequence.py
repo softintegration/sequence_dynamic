@@ -208,7 +208,7 @@ class IrSequence(models.Model):
         return seq_id._next(sequence_date=sequence_date)
 
     def _create_sequence_from_template(self, prefix=False, generator_code=False):
-        new_sequence = self.copy({'prefix': prefix,
+        new_sequence = self.sudo().copy({'prefix': prefix,
                                   'generator_code': generator_code,
                                   'parent_id': self.id,
                                   'sequence_type': 'sequence',
