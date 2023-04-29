@@ -157,7 +157,7 @@ class IrSequence(models.Model):
             if not suffix:
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
-            name = '%s %s' % (name, suffix)
+            name = '%s%s' % (name, suffix)
         return name
 
     def next_by_id(self, sequence_date=None):
