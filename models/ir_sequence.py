@@ -150,7 +150,11 @@ class IrSequence(models.Model):
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
         if seq.sequence_type == 'sequence':
             return super(IrSequence, self).next_by_code(sequence_code, sequence_date=sequence_date)
-        name = seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+        # FIXME:this can have bad impact on performance since the forced_name is very rarely used,but the check will be done allways
+        if not self.env.context.get('forced_name',False):
+            name = seq._next_by_sequence_template(sequence_code, sequence_date=sequence_date)
+        else:
+            name = self.env.context.get('forced_name')
         if seq.dynamic_suffix_code:
             # The suffix code is not used as unique element of sequence generation so if the value of some fields are null we have to proceed
             suffix = seq._build_code(TYPE_DYNAMIC_SUFF_CODE,fields_check_strict=False)
