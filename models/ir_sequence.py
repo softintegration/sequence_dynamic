@@ -186,6 +186,12 @@ class IrSequence(models.Model):
         if self.dynamic_prefix_code:
             prefix = self._build_code(TYPE_DYNAMIC_PREF_CODE)
             if not prefix:
+                # in the case we have default sequence to use
+                if self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence':
+                    return self.default_sequence_id._next(sequence_date=sequence_date)
+                elif self.default_sequence_id and self.default_sequence_id.sequence_type == 'sequence_template':
+                    return self.default_sequence_id._next_by_sequence_template(sequence_code,
+                                                                               sequence_date=sequence_date)
                 raise ValidationError(
                     _("Some fields used to generate dynamic sequence prefix are not defined,can not proceed!"))
             if not self.generate_new_sequence:
