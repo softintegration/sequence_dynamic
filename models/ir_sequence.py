@@ -140,6 +140,8 @@ class IrSequence(models.Model):
     @api.model
     def next_by_code(self, sequence_code, sequence_date=None):
         """ Inherit this method to request the template sequence if this is the case."""
+        # we have to ovoid security check layer as this method must be executed without ACLs restrictions
+        self = self.sudo()
         company_id = self.env.company.id
         # Here the sequence templates are with high priority in case there are sequences and sequence templates with the same code
         # and after that the sequence templates will be ordered by the sequence field,this is because we rely on the assumption that
